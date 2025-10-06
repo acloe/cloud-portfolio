@@ -1,3 +1,5 @@
+#Template for creating a simple VPC, 2 subnets public/private, route table and IGW.
+
 terraform {
   required_providers {
     aws = {
