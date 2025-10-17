@@ -6,4 +6,4 @@ This is my Terraform "home lab" to experiment with.
 4.  Creates IGW for public compute and NAT GW for private compute
 5.  Creates Amazon Linux 2023 EC2 instance
 6.  Creates IAM role with permissions set for SSM use, attaches to EC2 instance
-7.  Creates Security Group for EC2 to allow all outbound traffic and no inbound traffic
+7.  Creates Security Group for EC2 to allow all outbound traffic and no inbound traffic for private subnet
