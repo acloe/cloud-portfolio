@@ -47,10 +47,12 @@ It’s designed as a starting point for automating cloud infrastructure in a reu
 
 | File | Description |
 |------|--------------|
-| `main.tf` | Core resource definitions (VPC, EC2, IAM, networking) |
+| `main.tf` | (Terraform resources and providers) |
+| `compute.tf` | EC2 instances and security groups |
+| `network.tf` | VPC, subnets, route tables, IGW and Nat GW |
+| `iam.tf` | Role for SSM use |
 | `variables.tf` | Input variables |
 | `outputs.tf` | Outputs such as VPC and instance IDs |
-| `terraform.tf` | Provider and version configuration |
 | `.gitignore` | Excludes Terraform state files |
 
 ## 🚀 Next Steps
