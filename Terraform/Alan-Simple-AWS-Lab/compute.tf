@@ -39,7 +39,6 @@ resource "aws_instance" "Alan-Rhel10" {
   tags = { Name = "Alan-Rhel10" }
 }
 
-
 # -----------------------------
 # Security Groups
 # -----------------------------
