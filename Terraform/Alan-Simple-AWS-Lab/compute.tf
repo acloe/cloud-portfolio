@@ -28,12 +28,13 @@ resource "aws_instance" "Alan-Rhel10" {
     volume_size = 10
     volume_type = "gp3"
   }
-  #Install SSM agent onto Rhel10 instance
+  #Install SSM agent onto Rhel10 instance and run updates
   user_data = <<-EOF
     #!/bin/bash
     dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
     systemctl enable amazon-ssm-agent
     systemctl start amazon-ssm-agent
+    dnf upgrade -y
   EOF
 
   tags = { Name = "Alan-Rhel10" }

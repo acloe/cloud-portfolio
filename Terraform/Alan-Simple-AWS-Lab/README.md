@@ -10,7 +10,7 @@ It’s designed as a starting point for automating cloud infrastructure in a reu
 - **NAT Gateway** for private subnet internet access  
 - **Route Tables** and associations  
 - **IAM Role & Instance Profile** for EC2 SSM access  
-- **EC2 Instance** (RHEL) with SSM Agent installed via `user_data`  
+- **EC2 Instance** RHEL 10 with SSM Agent installed via `user_data` and Amazon Linux 2023
 - **Security Group** allowing no inbound traffic and all outbound traffic
 
 ## 🧩 How to Use
