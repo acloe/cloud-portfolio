@@ -3,7 +3,8 @@
 # -----------------------------
 #Play around with Amazon Linux 2023
 resource "aws_instance" "Alan-AmznLinux" {
-  ami                         = "ami-0d902a8756c37e690"
+  #ami                         = "ami-0d902a8756c37e690"
+  ami                         = data.aws_ssm_parameter.al2023_ami.value
   associate_public_ip_address = false
   instance_type               = "t3.large"
   subnet_id                   = aws_subnet.private_subnet.id
@@ -18,7 +19,8 @@ resource "aws_instance" "Alan-AmznLinux" {
 
 #Play around with Rhel 10
 resource "aws_instance" "Alan-Rhel10" {
-  ami                         = "ami-0f7153f6999a5ef60"
+  #ami                         = "ami-0f7153f6999a5ef60"
+  ami                         = data.aws_ami.rhel.id
   associate_public_ip_address = false
   instance_type               = "t3.large"
   subnet_id                   = aws_subnet.private_subnet.id
