@@ -9,3 +9,7 @@ output "Alan_EC2_Instance_IDs" {
     RHEL10    = aws_instance.Alan-Rhel10.id
   }
 }
+
+output "efs_id" {
+  value = aws_efs_file_system.main.id
+}

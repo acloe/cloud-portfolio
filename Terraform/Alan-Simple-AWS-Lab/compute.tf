@@ -8,8 +8,11 @@ resource "aws_instance" "Alan-AmznLinux" {
   associate_public_ip_address = false
   instance_type               = "t3.large"
   subnet_id                   = aws_subnet.private_subnet.id
-  vpc_security_group_ids      = [aws_security_group.no_inbound_all_outbound.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  vpc_security_group_ids = [
+    aws_security_group.no_inbound_all_outbound.id,
+    aws_security_group.app_efs_client_sg.id
+  ]
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   root_block_device {
     volume_size = 10
     volume_type = "gp3"
@@ -24,8 +27,11 @@ resource "aws_instance" "Alan-Rhel10" {
   associate_public_ip_address = false
   instance_type               = "t3.large"
   subnet_id                   = aws_subnet.private_subnet.id
-  vpc_security_group_ids      = [aws_security_group.no_inbound_all_outbound.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  vpc_security_group_ids = [
+    aws_security_group.no_inbound_all_outbound.id,
+    aws_security_group.app_efs_client_sg.id
+  ]
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   root_block_device {
     volume_size = 10
     volume_type = "gp3"
@@ -45,6 +51,17 @@ resource "aws_instance" "Alan-Rhel10" {
 # -----------------------------
 # Security Groups
 # -----------------------------
+
+# EC2 SG
+resource "aws_security_group" "app_efs_client_sg" {
+  name   = "app_efs_client_sg"
+  vpc_id = aws_vpc.alan_vpc.id
+  tags = {
+    Name = "app_efs_client_sg"
+  }
+}
+
+# Allows only outbound traffic, no inbound.  Connect to EC2 via SSM
 resource "aws_security_group" "no_inbound_all_outbound" {
   name        = "no-inbound-all-outbound"
   description = "No inbound traffic; allow all outbound traffic"
@@ -64,5 +81,28 @@ resource "aws_security_group" "no_inbound_all_outbound" {
 
   tags = {
     Name = "no-inbound-all-outbound"
+  }
+}
+
+#EFS share to mount to EC2 instances
+resource "aws_security_group" "efs_sg" {
+  name   = "efs-sg"
+  vpc_id = aws_vpc.alan_vpc.id
+
+  ingress {
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_efs_client_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "NFS Inbound"
   }
 }
