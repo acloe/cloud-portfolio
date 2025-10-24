@@ -9,7 +9,7 @@ resource "aws_instance" "Alan-AmznLinux" {
   instance_type               = "t3.large"
   subnet_id                   = aws_subnet.private_subnet.id
   vpc_security_group_ids = [
-    aws_security_group.no_inbound_all_outbound.id,
+    aws_security_group.allow_ssh.id,
     aws_security_group.app_efs_client_sg.id
   ]
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
@@ -20,17 +20,22 @@ resource "aws_instance" "Alan-AmznLinux" {
   tags = { Name = "Alan-AmznLinux" }
 }
 
-#Play around with Rhel 10
-resource "aws_instance" "Alan-Rhel10" {
+locals {
+  hosts = ["web01", "web02", "web03", "web04", "web05"]
+}
+#Play around with Rhel 9....add 5 instances on public subnet
+resource "aws_instance" "Alan-Rhel9" {
   #ami                         = "ami-0f7153f6999a5ef60"
-  ami                         = data.aws_ami.rhel.id
-  associate_public_ip_address = false
+  for_each                    = toset(local.hosts)
+  ami                         = data.aws_ami.rhel9_latest.id
+  associate_public_ip_address = true
   instance_type               = "t3.large"
-  subnet_id                   = aws_subnet.private_subnet.id
+  subnet_id                   = aws_subnet.public_subnet.id
   vpc_security_group_ids = [
-    aws_security_group.no_inbound_all_outbound.id,
+    aws_security_group.allow_ssh.id,
     aws_security_group.app_efs_client_sg.id
   ]
+  key_name             = "Alan-KP"
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   root_block_device {
     volume_size = 10
@@ -45,7 +50,9 @@ resource "aws_instance" "Alan-Rhel10" {
     dnf upgrade -y
   EOF
 
-  tags = { Name = "Alan-Rhel10" }
+  tags = {
+    Name = each.key
+  }
 }
 
 # -----------------------------
@@ -62,27 +69,26 @@ resource "aws_security_group" "app_efs_client_sg" {
 }
 
 # Allows only outbound traffic, no inbound.  Connect to EC2 via SSM
-resource "aws_security_group" "no_inbound_all_outbound" {
-  name        = "no-inbound-all-outbound"
-  description = "No inbound traffic; allow all outbound traffic"
-  vpc_id      = aws_vpc.alan_vpc.id
+# resource "aws_security_group" "no_inbound_all_outbound" {
+#   name        = "no-inbound-all-outbound"
+#   description = "No inbound traffic; allow all outbound traffic"
+#   vpc_id      = aws_vpc.alan_vpc.id
 
-  # No inbound rules at all — blocks all incoming traffic
-  ingress = []
+#   # No inbound rules at all — blocks all incoming traffic
+#   ingress = []
 
-  # Allow all outbound traffic
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1" # all protocols
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
+#   # Allow all outbound traffic
+#   egress {
+#     from_port        = 0
+#     to_port          = 0
+#     protocol         = "-1" # all protocols
+#     cidr_blocks      = ["0.0.0.0/0"]
+#   }
 
-  tags = {
-    Name = "no-inbound-all-outbound"
-  }
-}
+#   tags = {
+#     Name = "no-inbound-all-outbound"
+#   }
+# }
 
 #EFS share to mount to EC2 instances
 resource "aws_security_group" "efs_sg" {
@@ -104,5 +110,31 @@ resource "aws_security_group" "efs_sg" {
   }
   tags = {
     Name = "NFS Inbound"
+  }
+}
+
+resource "aws_security_group" "allow_ssh" {
+  name        = "allow_ssh"
+  description = "Allow SSH Inbound"
+  vpc_id      = aws_vpc.alan_vpc.id
+
+  # Allow SSH Inbound
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "SSH Inbound"
   }
 }
