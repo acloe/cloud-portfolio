@@ -2,7 +2,6 @@ resource "aws_efs_file_system" "main" {
   creation_token   = "my-lab-efs"
   performance_mode = "generalPurpose"
   throughput_mode  = "bursting"
-
   tags = {
     Name = "my-lab-efs"
   }
