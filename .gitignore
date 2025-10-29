@@ -25,3 +25,7 @@ override.tf.json
 
 # Don't ignore the lock file
 !.terraform.lock.hcl
+
+#Ansible
+Ansible/.ansible/facts
+

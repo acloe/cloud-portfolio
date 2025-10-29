@@ -7,7 +7,7 @@ resource "aws_instance" "Alan-AmznLinux" {
   ami                         = data.aws_ssm_parameter.al2023_ami.value
   associate_public_ip_address = false
   instance_type               = "t3.large"
-  subnet_id                   = aws_subnet.private_subnet.id
+  subnet_id                   = aws_subnet.public_subnet.id
   vpc_security_group_ids = [
     aws_security_group.allow_ssh.id,
     aws_security_group.app_efs_client_sg.id
@@ -21,7 +21,7 @@ resource "aws_instance" "Alan-AmznLinux" {
 }
 
 locals {
-  hosts = ["web01", "web02", "web03", "web04", "web05"]
+  hosts = ["web01", "web02"]
 }
 #Play around with Rhel 9....add 5 instances on public subnet
 resource "aws_instance" "Alan-Rhel9" {
@@ -54,6 +54,42 @@ resource "aws_instance" "Alan-Rhel9" {
     Name = each.key
   }
 }
+
+resource "aws_instance" "Alan-Ubuntu" {
+  #ami                         = "ami-0d902a8756c37e690"
+  ami                         = data.aws_ami.ubuntu_2404.id
+  associate_public_ip_address = true
+  instance_type               = "t3.large"
+  subnet_id                   = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [
+    aws_security_group.allow_ssh.id,
+    aws_security_group.app_efs_client_sg.id
+  ]
+  key_name             = "Alan-KP"
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  root_block_device {
+    volume_size = 10
+    volume_type = "gp3"
+  }
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+
+    # Update the system
+    apt-get update -y
+    apt-get upgrade -y
+
+    # Install SSM Agent (available in Ubuntu repos now)
+    snap install amazon-ssm-agent --classic
+
+    # Enable and start the SSM agent
+    systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+    systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
+  EOF
+
+  tags = { Name = "Alan-Ubuntu" }
+}
+
 
 # -----------------------------
 # Security Groups
